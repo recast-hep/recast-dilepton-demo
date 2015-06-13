@@ -1,0 +1,13 @@
+Index: PhotonEfficiencyCorrection/util/PrintPhotonSF.cxx
+===================================================================
+--- PhotonEfficiencyCorrection/util/PrintPhotonSF.cxx	(revision 672133)
++++ PhotonEfficiencyCorrection/util/PrintPhotonSF.cxx	(working copy)
+@@ -78,7 +78,7 @@
+ SF[3]=result_tight_unc4.getScaleFactor(); SFerr[3]=result_tight_unc4.getTotalUncertainty(); 
+ SF[7]=result_tight_con4.getScaleFactor(); SFerr[7]=result_tight_con4.getTotalUncertainty(); 
+ 
+-printf( "|  %4.1f  | %3.3f(\\\pm%1.3f) | %3.3f(\\\pm%1.3f) | %3.3f(\\\pm%1.3f)  | %3.3f(\\\pm%1.3f) | %3.3f(\\\pm%1.3f) | %3.3f(\\\pm%1.3f) | %3.3f(\\\pm%1.3f) | %3.3f(\\\pm%1.3f) |\n",pt,SF[0],SFerr[0],SF[1],SFerr[1],SF[2],SFerr[2],SF[3],SFerr[3],SF[4],SFerr[4],SF[5],SFerr[5],SF[6],SFerr[6],SF[7],SFerr[7]);
++printf( "|  %4.1f  | %3.3f(\\pm%1.3f) | %3.3f(\\pm%1.3f) | %3.3f(\\pm%1.3f)  | %3.3f(\\pm%1.3f) | %3.3f(\\pm%1.3f) | %3.3f(\\pm%1.3f) | %3.3f(\\pm%1.3f) | %3.3f(\\pm%1.3f) |\n",pt,SF[0],SFerr[0],SF[1],SFerr[1],SF[2],SFerr[2],SF[3],SFerr[3],SF[4],SFerr[4],SF[5],SFerr[5],SF[6],SFerr[6],SF[7],SFerr[7]);
+ cout << "|------------------------------------------------------------------------------------------------------------------------------------------------------------|"<<endl;
+ }
+ 

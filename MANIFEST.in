@@ -1,0 +1,2 @@
+recursive-include recastdilepton/templates *
+recursive-include recastdilepton/resources *
