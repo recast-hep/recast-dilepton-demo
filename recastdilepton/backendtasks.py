@@ -1,14 +1,15 @@
 import logging
+import subprocess
+import time
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('RECAST')
 
 def recast(ctx):
   workdir = 'workdirs/{}'.format(ctx['jobguid'])
-  
-  log.info('Hello World')
-  with open('{}/helloWorld.txt'.format(workdir),'w') as f:
-    f.write('Hello World!')
-  
+
+  proc = subprocess.Popen(['recastworkflow-dilepton',workdir], stderr = subprocess.PIPE)  
+  proc.wait()
+
 def resultlist():
-  return ['helloWorld.txt']
+  return ['plots','mini.root','Output.root']

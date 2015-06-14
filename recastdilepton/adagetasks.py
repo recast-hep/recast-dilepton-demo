@@ -26,7 +26,8 @@ def createminiroot(workdir,filelist):
     os.remove(minirootdest)
   print "GO"
   subprocess.call('source {} && ./DileptonAnalysis -maxsyst 1 -mc -m -f {}'.format(rsrc('ntupleenv.sh'),filelist),
-  			  shell = True,stdout = open('{}/mini.log'.format(workdir),'w'))
+  			  shell = True,stdout = open('{}/mini.log'.format(workdir),'w')
+				      ,stderr = open('{}/mini.err'.format(workdir),'w'))
   print "DONE"
   print "createmini done"
   assert os.path.exists(minirootdest)
