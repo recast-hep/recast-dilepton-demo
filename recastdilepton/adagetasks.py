@@ -6,58 +6,57 @@ import os
 import ROOT
 import yaml
 
-import pkg_resources
-def rsrc(path):
-  return pkg_resources.resource_filename('recastdilepton','resources/{}'.format(path))
+from fileaccess import rsrc
+from subprocessctx import subprocess_in_env
 
 @adagetask
-def downlaod(infoyaml,downloaddir,listfilename):
-  inputdataset = yaml.load(open(infoyaml))['inputdataset']  
-  subprocess.call('source {} && dq2-get -H {} {}'.format(rsrc('downloadenv.sh'),downloaddir ,inputdataset), shell = True)
-  with open(listfilename,'w') as listfile:
-    for file in os.listdir(downloaddir):
-      listfile.write('{}/{}\n'.format(os.path.abspath(downloaddir),file))
+def download(inputdataset,downloaddir,listfilename):
+  with subprocess_in_env(envscript = rsrc('downloadenv.sh')) as check_call:
+    check_call('dq2-get -H {} {}'.format(downloaddir ,inputdataset))
+  
+  # with open(listfilename,'w') as listfile:
+  #   for file in os.listdir(downloaddir):
+  #     listfile.write('{}/{}\n'.format(os.path.abspath(downloaddir),file))
+
 
 @adagetask
-def createminiroot(workdir,filelist):
-  coderoot = '{}/d3pdreader'.format(os.environ['DILEPTONCODE'])
-  minirootdest = '{}/mini.root'.format(coderoot)
-  if  os.path.exists(minirootdest):
-    os.remove(minirootdest)
-  print "GO"
-  subprocess.call('source {} && ./DileptonAnalysis -maxsyst 1 -mc -m -f {}'.format(rsrc('ntupleenv.sh'),filelist),
-  			  shell = True,stdout = open('{}/mini.log'.format(workdir),'w')
-				      ,stderr = open('{}/mini.err'.format(workdir),'w'))
-  print "DONE"
-  print "createmini done"
-  assert os.path.exists(minirootdest)
-  shutil.move(minirootdest,'{}/mini.root'.format(workdir))
+def createminiroot(inputlist,outminifile,outputlog):
+  with subprocess_in_env(envscript = rsrc('minienv.sh'), outlog = outputlog, errlog = outputlog) as check_call:
+    check_call('./DileptonAnalysis -m {} -mc -truth -maxsyst 1 -unblind -nomllalpgenfilter -f {}'.format(outminifile,inputlist,outputlog))
+
 
 @adagetask
-def make_SR_histos(workdir,minirootfile):
-  coderoot = '{}/fasthistomaker'.format(os.environ['DILEPTONCODE'])
-  outputrootdest = '{}/Output.root'.format(coderoot)
-  if  os.path.exists(outputrootdest):
-    os.remove(outputrootdest)
-  subprocess.call('source {} && ./fasthistomaker {}'.format(rsrc('fastshistoenv.sh'),minirootfile), shell = True)
-  assert os.path.exists(outputrootdest)
-  shutil.move(outputrootdest,'{}/Output.root'.format(workdir))
+def prepareAndYields(model,efficiencyFile,xsectionFile,inputroot,outputroot,outputyield,outputlog):
+  with subprocess_in_env(envscript = rsrc('prepareenv.sh'), outlog = outputlog, errlog = outputlog) as check_call:
+    check_call('python preparehistfit.py {inputroot} {inputeff} {xsecfile} {modelName} {outputroot} {outputyield}'.format(
+        inputroot   = inputroot,
+        inputeff    = efficiencyFile,
+        xsecfile    = xsectionFile,
+        modelName   = model,
+        outputroot  = outputroot,
+        outputyield = outputyield)
+    )
 
 @adagetask
-def plot_SRs(outputrootfile,outputdir):
-  if not os.path.exists(outputdir):
-    os.makedirs(outputdir)
+def runFit(fitworkdir,fitinputroot,fitoutputgz,fitcodearchive):
+  with subprocess_in_env(envscript = rsrc('fitenv.sh')) as check_call:
+    check_call('{script} {workdir} {input} {output} {code}'.format(
+      script = rsrc('run_fit_recast.sh'),
+      workdir = fitworkdir,
+      input = fitinputroot,
+      output =  fitoutputgz,
+      code = fitcodearchive
+      )
+    )
 
-  f = ROOT.TFile.Open(outputrootfile)
-  c = ROOT.TCanvas()
-  allplotsname = '{}/plots.pdf'.format(outputdir)
-  c.SaveAs(allplotsname+'[')
-  for k in f.GetListOfKeys():
-    if '_SR' in k.GetName():
-      hist = f.Get(k.GetName())
-      hist.SetFillColor(38)
-      hist.Draw('hist')
-      c.SaveAs(allplotsname)
-      c.SaveAs('{}/{}'.format(outputdir,k.GetName()+'.png'))
-  c.SaveAs(allplotsname+']')
-
+@adagetask
+def extractFitResults(fitarchive,postfitworkdir,modelname,outputyaml):
+  with subprocess_in_env(envscript = rsrc('fitenv.sh')) as check_call:
+    check_call('{script} {fitarchive} {workdir} {model} {output}'.format(
+      script = rsrc('post_fit.sh'),
+      fitarchive = fitarchive,
+      workdir = postfitworkdir,
+      model = modelname,
+      output = outputyaml
+      )
+    )

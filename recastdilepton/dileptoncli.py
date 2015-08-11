@@ -3,26 +3,52 @@ import adagetasks
 import logging
 import adage
 import os
-
+import yaml
+from fileaccess import rsrc,workdir_access_methods
 from adage import mknode
 
 def build_dag(workdir):
   rules = []
   dag = adage.mk_dag()
-  
-  def inwrk(path):
-    return '{0}/{1}'.format(os.path.abspath(workdir),path)
 
-  def rsrc(path):
-    return pkg_resources.resource_filename('recastdilepton','resources/{}'.format(path))
+  inwrk,inpt = workdir_access_methods(workdir)
 
-  download_stage = mknode(dag,adagetasks.downlaod.s(inwrk('inputs/info.yaml'),inwrk('grid_download'),inwrk('files.list')))
+  info = yaml.load(open(inpt('input.yaml')))
+  download = mknode(dag,adagetasks.download.s(info['datasetname'],inwrk('grid_download'),inwrk('files.list')))
 
-  miniroot_stage = mknode(dag,adagetasks.createminiroot.s(workdir,inwrk('files.list')), depends_on = [download_stage])
+  miniroot = mknode(dag,adagetasks.createminiroot.s(
+    inwrk('files.list'),
+    inwrk('mini.root'),
+    inwrk('mini.log')
+  ),
+  depends_on = [download])
 
-  make_SR_histos_stage = mknode(dag,adagetasks.make_SR_histos.s(workdir,inwrk('mini.root')), depends_on = [miniroot_stage])
+  prepareAndYields = mknode(dag,adagetasks.prepareAndYields.s(
+    info['modelName'],
+    inpt(info['efficiencyFile']),
+    inpt(info['xsectionFile']),
+    inwrk('mini.root'),
+    inwrk('prepare.root'),
+    inwrk('prepare.yield'),
+    inwrk('prepare.log'),
+  ),
+  depends_on = [miniroot])
 
-  make_plots = mknode(dag, adagetasks.plot_SRs.s(inwrk('Output.root'),inwrk('plots')),depends_on = [make_SR_histos_stage])
+  fit = mknode(dag, adagetasks.runFit.s(
+    inwrk('fitworkdir'),
+    inwrk('prepare.root'),
+    inwrk('fit.tgz'),
+    rsrc('fitcode.tgz'),
+  ),
+  depends_on = [prepareAndYields])
+
+  postFit = mknode(dag, adagetasks.extractFitResults.s(
+    inwrk('fit.tgz'),
+    inwrk('postfitworkdir'),
+    info['modelName'],
+    inwrk('fitrestults.yaml'),
+  ),
+  depends_on = [fit])
 
   return dag,rules
 
@@ -37,8 +63,6 @@ def dileptoncli(workdir,logger):
   dag,rules = build_dag(workdir)
   log.info('running dilepton from workdir {0}'.format(workdir))
  
-  #adage.rundag(dag,rules,loggername = logger, track = True, workdir = workdir, trackevery = 60)
   adage.rundag(dag,rules)
 
   log.info('done')
-
