@@ -3,7 +3,6 @@ from contextlib import contextmanager
 import subprocess
 import os
 
-logging.basicConfig()
 log = logging.getLogger(__name__)
 
 def dummy(*args,**kwargs):

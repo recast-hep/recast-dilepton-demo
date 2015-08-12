@@ -3,15 +3,17 @@ from adage import adagetask
 import subprocess
 import shutil
 import os
-#import ROOT
 import yaml
 
 from fileaccess import rsrc
 from subprocessctx import subprocess_in_env
 
+import logging 
+log = logging.getLogger(__name__)
+
 @adagetask
 def download(inputdataset,downloaddir,listfilename):
-  print "skipping download"  
+  log.info("downloading datasets")
   with subprocess_in_env(envscript = rsrc('downloadenv.sh')) as check_call:
     check_call('dq2-get -H {} {}'.format(downloaddir ,inputdataset))
   
@@ -22,12 +24,14 @@ def download(inputdataset,downloaddir,listfilename):
 
 @adagetask
 def createminiroot(inputlist,outminifile,outputlog):
+  log.info("creating mini ntuple")
   with subprocess_in_env(envscript = rsrc('minienv.sh'), outlog = outputlog, errlog = outputlog+'.err') as check_call:
     check_call('./DileptonAnalysis -m {} -mc -truth -maxsyst 1 -unblind -nomllalpgenfilter -f {}'.format(outminifile,inputlist,outputlog))
 
 
 @adagetask
 def prepareAndYields(model,efficiencyFile,xsectionFile,inputroot,outputroot,outputyield,outputlog):
+  log.info("prepare for histfitter and produce yields")
   with subprocess_in_env(envscript = rsrc('prepareenv.sh'), outlog = outputlog, errlog = outputlog) as check_call:
     check_call('python preparehistfit.py {inputroot} {inputeff} {xsecfile} {modelName} {outputroot} {outputyield}'.format(
         inputroot   = inputroot,
@@ -40,6 +44,7 @@ def prepareAndYields(model,efficiencyFile,xsectionFile,inputroot,outputroot,outp
 
 @adagetask
 def runFit(fitworkdir,fitinputroot,fitoutputgz,fitcodearchive):
+  log.info("run histfitter")
   with subprocess_in_env(envscript = rsrc('fitenv.sh')) as check_call:
     check_call('{script} {workdir} {input} {output} {code}'.format(
       script = './run_fit_recast.sh',
@@ -52,6 +57,7 @@ def runFit(fitworkdir,fitinputroot,fitoutputgz,fitcodearchive):
 
 @adagetask
 def extractFitResults(fitarchive,postfitworkdir,modelname,outputyaml):
+  log.info("extract and format fit results")
   with subprocess_in_env(envscript = rsrc('fitenv.sh')) as check_call:
     check_call('{script} {fitarchive} {workdir} {model} {output}'.format(
       script = './post_fit.sh',

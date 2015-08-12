@@ -4,8 +4,12 @@ import logging
 import adage
 import os
 import yaml
+
 from fileaccess import rsrc,workdir_access_methods
 from adage import mknode
+
+
+
 
 def build_dag(workdir):
   rules = []
@@ -53,16 +57,16 @@ def build_dag(workdir):
   return dag,rules
 
 
+
 @click.command()
 @click.argument('workdir')
 @click.option('-l','--logger',default = __name__)
 def dileptoncli(workdir,logger):
-  log = logging.getLogger(logger)
-  adagetasks.log = log
+  logging.basicConfig(level = logging.INFO)
 
+  log = logging.getLogger(logger)
   dag,rules = build_dag(workdir)
   log.info('running dilepton from workdir {0}'.format(workdir))
- 
   adage.rundag(dag,rules)
 
   log.info('done')
