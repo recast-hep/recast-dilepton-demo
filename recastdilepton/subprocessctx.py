@@ -3,7 +3,14 @@ from contextlib import contextmanager
 import subprocess
 import os
 
+logging.basicConfig()
 log = logging.getLogger(__name__)
+
+def dummy(*args,**kwargs):
+  print 'args: {}'.format(args)
+  print 'kwargs: {}'.format(kwargs)
+#subprocess.check_call = dummy
+
 
 @contextmanager
 def subprocess_in_env(envscript = None,workdir = None, outlog = os.devnull, errlog = os.devnull):

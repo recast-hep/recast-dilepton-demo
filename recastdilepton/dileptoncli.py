@@ -38,7 +38,7 @@ def build_dag(workdir):
     inwrk('fitworkdir'),
     inwrk('prepare.root'),
     inwrk('fit.tgz'),
-    rsrc('fitcode.tgz'),
+    'fromscript.tgz',
   ),
   depends_on = [prepareAndYields])
 

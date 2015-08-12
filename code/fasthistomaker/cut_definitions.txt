@@ -1,3 +1,0 @@
-llOS_SR_MT2_90   ((lepton1_pt>35)&&(lepton2_pt>20)&&(NL20==0&&NB20new==0&&NF30new==0)&&(abs(mll-91.2)>10&&mt2>90))  (mc_weight*pu_weight_unblind*le_weight*tr_weight_unblind*hfor_weight*bt_weight_vector[0])
-llOS_SR6_MT2_120 ((lepton1_pt>35)&&(lepton2_pt>20)&&(NL20==0&&NB20new==0&&NF30new==0)&&(abs(mll-91.2)>10&&mt2>120)) (mc_weight*pu_weight_unblind*le_weight*tr_weight_unblind*hfor_weight*bt_weight_vector[0])
-llOS_SR7_MT2_150 ((lepton1_pt>35)&&(lepton2_pt>20)&&(NL20==0&&NB20new==0&&NF30new==0)&&(abs(mll-91.2)>10&&mt2>150)) (mc_weight*pu_weight_unblind*le_weight*tr_weight_unblind*hfor_weight*bt_weight_vector[0])
