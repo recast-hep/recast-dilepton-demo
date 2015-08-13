@@ -50,7 +50,7 @@ def build_dag(workdir):
     inwrk('fit.tgz'),
     inwrk('postfitworkdir'),
     info['modelName'],
-    inwrk('fitrestults.yaml'),
+    inwrk('fitresults.yaml'),
   ),
   depends_on = [fit])
 
