@@ -24,6 +24,9 @@ def recast(ctx):
     time.sleep(0.01)
 
   log.info('finished')
-
+  if proc.returncode:
+    log.error('workflow failed, raising error')
+    raise RuntimeError
+    
 def resultlist():
   return ['fitresults.yaml','prepare.yield','*.log']
